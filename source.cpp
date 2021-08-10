@@ -1,29 +1,28 @@
 #include <Windows.h>
-#include "global.h" 
 #include "glew.h"
 #include <gl/GL.h>
-#include <cmath>
 
-const int seed = 0;
+#include <cmath>
+#include <cstdio>
+
+#include "global.h"
+#include "Level.h"
+#include "sprites.h"
 
 unsigned int VBO;
 unsigned int VTO;
 unsigned int VZO;
 unsigned int textures;
 
-unsigned char texture[20][92];
+
+unsigned char texture[screenHeight][screenWidht][3];
 
 float square[12] = { -1.0,-1.0,1.0,-1.0,-1.0,1.0,1.0,1.0,-1.0,1.0,1.0,-1.0 };
 float textCoords[12] = { 0.0,0.0,1.0,0.0,0.0,1.0,1.0,1.0,0.0,1.0,1.0,0.0 };
-float playerPos[2] = { 0.0,0.0 };
 
-int squarePos;
-
-POINT mouse;
+unsigned char screen;
 
 unsigned int init_game(HWND app) {
-    texture[1][5] = 255;
-
     unsigned int shaderprogram = glCreateProgram();
     glCreateBuffers(1, &VBO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -39,11 +38,9 @@ unsigned int init_game(HWND app) {
 
     glGenTextures(1, &textures);
     glBindTexture(GL_TEXTURE_2D, textures);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 30, 20, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidht, screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
     glGenerateMipmap(GL_TEXTURE_2D);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    glUniform2f(glGetUniformLocation(shaderprogram, "playerpos"), playerPos[0],playerPos[1]);
 
     unsigned int vertexshader = glCreateShader(GL_VERTEX_SHADER);
     unsigned int fragshader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -58,9 +55,26 @@ unsigned int init_game(HWND app) {
     return shaderprogram;
 }
 
+void selectScreen() {
+    switch (screen) {
+    case LevelEditor:
+        levelEditorFN();
+        break;
+    case Level:
+        levelFN();
+        break;
+    case mainMenu:
+        mainMenuFN();
+        break;
+    case levelMenu:
+        levelMenuFN();
+        break;
+    }
+}
+
 void the_game(HDC pixel, unsigned int shaderprogram, HWND app) {
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 30, 20, 0, GL_RGB, GL_UNSIGNED_BYTE, texture);
-    glClearColor(0.2, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    selectScreen();
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, screenWidht, screenHeight, GL_RGB, GL_UNSIGNED_BYTE, texture);
     glDrawArrays(GL_TRIANGLES, 0, sizeof(square) * 2);
+    memset(texture, 0, screenWidht * screenHeight * 3);
 }

@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <thread>
 #include "glew.h"
 #include <gl/GL.h>
 #include <gl/GLU.h>
@@ -38,7 +37,7 @@ int WINAPI wWinMain(
 	glewInit();
 	unsigned int shaderprogram = init_game(app);
 	while (true) {
-		if (PeekMessage(&msg, app, 0, 0, 0) != 0) {
+		while (PeekMessage(&msg, app, 0, 0, 0) != 0) {
 			GetMessage(&msg, app, 0, 0);
 			TranslateMessage(&msg);
 			DispatchMessageW(&msg);
